@@ -359,43 +359,104 @@ const BroilerForm = () => {
       console.error(error);
     }
   };
+  
+const handleDiagnose = async () => {
+  console.log("Image preview object:", imagePreview);
+  console.log("Image type:", typeof imagePreview);
+  console.log("Broiler ID:", predictions.broiler_id);
 
-  const handleDiagnose = async () => {
-    console.log("Image preview object:", imagePreview);
-    console.log("Image type:", typeof imagePreview);
-    console.log("Broiler ID:", predictions.broiler_id);
+  if (!imagePreview) {
+    alert("Please provide an image for diagnosis.");
+    return;
+  }
 
-    if (!imagePreview) {
-      alert("Please provide an image for diagnosis.");
-      return;
+  const b_id = predictions.broiler_id;
+
+  if (!b_id || b_id === "undefined") {
+    alert("Error: Broiler ID is missing. Please save details first.");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    console.log("Sending image to API:", imagePreview);
+
+    // Upload the image and run the AI prediction.
+    // Django already saves the image and prediction record.
+    const result = await predictImage(imagePreview, b_id);
+
+    if (!result || !result.predictions) {
+      throw new Error("The prediction API did not return prediction scores.");
     }
 
-    const b_id = predictions.broiler_id;
-    if (!b_id || b_id === "undefined") {
-      alert("Error: Broiler ID is missing. Please save details first.");
-      return;
+    const scores = result.predictions[0];
+
+    if (!isPredictionValid(scores)) {
+      throw new Error("The returned prediction scores are invalid.");
     }
 
-    setIsLoading(true);
-    try {
-      console.log("Sending image to API:", imagePreview);
-      const prediction = await predictImage(imagePreview, b_id);
-      if (prediction && isPredictionValid(prediction?.predictions[0])) {
-        const finalPredictions = {
-          ...predictions,
-          image_prediction: diagnosisLabels[getLargestIndex(prediction?.predictions[0])],
-          broiler_image: prediction?.broiler_image,
-        };
-        const response = await submitImageAndPrediction(finalPredictions);
-        setPredictions(prev => ({ ...prev, image_prediction: prediction.predictions, broiler_image: prediction.broiler_image }));
-        setRes(response);
-      }
-    } catch (error) {
-      console.error("Diagnosis error:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const predictedLabel =
+      result.predicted_class ??
+      diagnosisLabels[getLargestIndex(scores)];
+
+    setPredictions((prev) => ({
+      ...prev,
+      image_prediction: predictedLabel,
+      broiler_image: result.image_url,
+      health_status: predictedLabel,
+    }));
+
+    setRes(result);
+
+    console.log("Diagnosis successful:", result);
+    console.log("Predicted class:", predictedLabel);
+    console.log("Saved database record ID:", result.db_record_id);
+  } catch (error) {
+    console.error("Diagnosis error:", error);
+    alert("Diagnosis failed. Please check the console for details.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+  // const handleDiagnose = async () => {
+  //   console.log("Image preview object:", imagePreview);
+  //   console.log("Image type:", typeof imagePreview);
+  //   console.log("Broiler ID:", predictions.broiler_id);
+
+  //   if (!imagePreview) {
+  //     alert("Please provide an image for diagnosis.");
+  //     return;
+  //   }
+
+  //   const b_id = predictions.broiler_id;
+  //   if (!b_id || b_id === "undefined") {
+  //     alert("Error: Broiler ID is missing. Please save details first.");
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+  //   try {
+  //     console.log("Sending image to API:", imagePreview);
+  //     const prediction = await predictImage(imagePreview, b_id);
+  //     if (prediction && isPredictionValid(prediction?.predictions[0])) {
+  //       const finalPredictions = {
+  //         ...predictions,
+  //         image_prediction: diagnosisLabels[getLargestIndex(prediction?.predictions[0])],
+  //         broiler_image: prediction?.broiler_image,
+  //       };
+  //       const response = await submitImageAndPrediction(finalPredictions);
+  //       setPredictions(prev => ({ ...prev, image_prediction: prediction.predictions, broiler_image: prediction.broiler_image }));
+  //       setRes(response);
+  //     }
+  //   } catch (error) {
+  //     console.error("Diagnosis error:", error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <Container>
@@ -466,13 +527,19 @@ const BroilerForm = () => {
                     <IconButton onClick={handleOpenDialog} size="small"><AddCircleOutline sx={{ color: "red" }} /></IconButton>
                   )}
                 </Typography>
+                {res?.predictions && (
+                <>
+                <AbnormalityDetection data={res.predictions} />
+                <PredictionResult data={res.predictions} />
+                </>
+                )}
 
-                {predictions.image_prediction && (
+                {/* {predictions.image_prediction && (
                   <>
                     <AbnormalityDetection data={predictions.image_prediction[0]} />
                     <PredictionResult data={predictions.image_prediction[0]} />
                   </>
-                )}
+                )} */}
               </Box>
             </Grid>
           </Grid>

@@ -292,23 +292,73 @@ const BroilerProfile = ({ data }) => {
   const [supervisorDetails, setSupervisorDetails] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const loadData = async () => {
-      if (!data?.id) return;
-      try {
-        const broilerData = await fetchBroilerById(data.id);
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     if (!data?.id) return;
+  //     try {
+  //       const broilerData = await fetchBroilerById(data.id);
 
-        const broilerList = Array.isArray(broilerData)
-          ? broilerData
-          : broilerData?.broilers || broilerData?.results || [];
+  //       const broilerList = Array.isArray(broilerData)
+  //         ? broilerData
+  //         : broilerData?.broilers || broilerData?.results || [];
 
-        setBroilers(broilerList);
-      } catch (error) {
-        console.error("Error loading profile data:", error);
+  //       setBroilers(broilerList);
+  //     } catch (error) {
+  //       console.error("Error loading profile data:", error);
+  //     }
+  //   };
+  //   loadData();
+  // }, [data]);
+  
+useEffect(() => {
+  const loadData = async () => {
+    if (!data?.id) {
+      console.warn("Broiler ID is missing:", data);
+      setBroilers([]);
+      return;
+    }
+
+    try {
+      console.log("Fetching records for broiler ID:", data.id);
+
+      const broilerData = await fetchBroilerById(data.id);
+
+      console.log("API response:", broilerData);
+
+      let broilerList = [];
+
+      if (Array.isArray(broilerData)) {
+        broilerList = broilerData;
+      } else if (Array.isArray(broilerData?.broilers)) {
+        broilerList = broilerData.broilers;
+      } else if (Array.isArray(broilerData?.results)) {
+        broilerList = broilerData.results;
+      } else if (
+        broilerData &&
+        typeof broilerData === "object" &&
+        (
+          broilerData.id !== undefined ||
+          broilerData.broiler_image ||
+          broilerData.record_date
+        )
+      ) {
+        // The API returned one record instead of an array.
+        broilerList = [broilerData];
       }
-    };
-    loadData();
-  }, [data]);
+
+      console.log("Records prepared for display:", broilerList);
+
+      setBroilers(broilerList);
+      setPage(0);
+    } catch (error) {
+      console.error("Error loading profile data:", error);
+      setBroilers([]);
+    }
+  };
+
+  loadData();
+}, [data?.id]);
+
 
   // const filteredBroiler = Array.isArray(broilers)
   //   ? broilers.filter((broiler) =>

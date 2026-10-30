@@ -30,7 +30,12 @@ api.interceptors.response.use(
           { refresh }
         );
 
+        // localStorage.setItem("token", res.data.access);
         localStorage.setItem("token", res.data.access);
+
+        if (res.data.refresh) {
+          localStorage.setItem("refresh_token", res.data.refresh);
+        }
 
         originalRequest.headers.Authorization =
           `Bearer ${res.data.access}`;

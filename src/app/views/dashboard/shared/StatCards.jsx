@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { getFarmCount } from "app/apis/farm_api";
 import { LocalHospital } from "@mui/icons-material"; // keep Farms icon if you like
 // import { GiBarn } from 'react-icons/gi';
-import { GiChickens } from 'react-icons/gi';
+// import { GiChickens } from 'react-icons/gi';
 import { MdAgriculture } from 'react-icons/md';
 import { GiChicken, GiBarn } from 'react-icons/gi';
 import { MdGroups, MdStorefront } from 'react-icons/md';

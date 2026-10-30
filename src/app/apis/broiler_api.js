@@ -371,19 +371,41 @@ export const updateBroilerInAPI = async (id, formData) => {
   }
 };
 
+// export const fetchBroilerById = async (id) => {
+//   const BASE_URL = process.env.REACT_APP_SERVER_IP_ADDRESS || "http://localhost:8000";
+
+//   try {
+//     const response = await api.get(`${BASE_URL}/api/getprediction/${id}/`, {
+//       headers: getAuthHeaders(),
+//     });
+//     return response.data;
+//   } catch (error) {
+//     console.error("API Error:", error.response ? error.response.data : error.message);
+//     throw error;
+//   }
+// };
+
 export const fetchBroilerById = async (id) => {
-  const BASE_URL = process.env.REACT_APP_SERVER_IP_ADDRESS || "http://localhost:8000";
+  const BASE_URL =
+    process.env.REACT_APP_SERVER_IP_ADDRESS || "http://localhost:8000";
 
   try {
-    const response = await api.get(`${BASE_URL}/api/getprediction/${id}/`, {
-      headers: getAuthHeaders(),
-    });
+    const response = await api.get(
+      `${BASE_URL}/api/broilers/getprediction/${id}/`,
+      {
+        headers: getAuthHeaders(),
+      }
+    );
     return response.data;
   } catch (error) {
-    console.error("API Error:", error.response ? error.response.data : error.message);
+    console.error(
+      "API Error:",
+      error.response ? error.response.data : error.message
+    );
     throw error;
   }
 };
+
 
 export const getBroilersCount = async () => {
   try {

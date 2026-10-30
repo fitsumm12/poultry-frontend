@@ -95,12 +95,27 @@ const BroilerRecord = () => {
     });
   }, [broilers, searchQuery]);
 
-  // 4. HANDLERS
+  // // 4. HANDLERS
+  // const handleBroilerView = async (id) => {
+  //   const data = await fetchBroiler(id);
+  //   setBroiler(data);
+  //   setViewBroiler(true);
+  // };
   const handleBroilerView = async (id) => {
+  try {
     const data = await fetchBroiler(id);
+    console.log("FULL BROILER DATA:", JSON.stringify(data, null, 2));
+
+    console.log("Individual Broiler Details:", data);
+    console.log("Farmer Name:", data?.farmer_name);
+    console.log("Farm Name:", data?.farm_name);
+
     setBroiler(data);
     setViewBroiler(true);
-  };
+  } catch (error) {
+    console.error("Error fetching individual broiler:", error);
+  }
+};
 
   const handleBack = () => setViewBroiler(false);
 
@@ -191,7 +206,7 @@ const BroilerRecord = () => {
                       </IconButton>
                     </Tooltip>
                     <Typography sx={{ ml: 2, fontWeight: 'bold' }}>
-                      {`${broiler?.farmer_name} ${broiler?.farm_name}`.toUpperCase()}
+                      {broiler?.farmer_name?.toUpperCase() || ""}
                     </Typography>
                   </Box>
                 </AccordionSummary>
